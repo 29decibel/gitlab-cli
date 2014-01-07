@@ -1,0 +1,8 @@
+{
+  "Host": "https://your-gitlab-web.com/api/v3",
+  "PrivateToken": "some-token-in-your-profile",
+  "DefaultProject": "gitlab",
+  "ProjectsMap": {
+    "gitlab": "111"
+  }
+}
