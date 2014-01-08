@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +18,7 @@ type Config struct {
 
 // MergeRequest is the struct for merge reuqest
 type MergeRequest struct {
+	ID           int    `json: id`
 	Title        string `json: title`
 	Assignee     Person `json: assignee`
 	State        string `json: state`
@@ -40,12 +42,14 @@ func (mergeRequest MergeRequest) String() string {
 
 // Person is the general user information
 type Person struct {
+	ID       int    `json: id`
 	UserName string `json: username`
 	Email    string `json: email`
 	Name     string `json: name`
 }
 
 var config *Config
+var perPage = flag.Int("per_page", 10, "default counts per page")
 
 func parseConfig() *Config {
 	configFile, err := ioutil.ReadFile("./config.json")
@@ -58,19 +62,20 @@ func parseConfig() *Config {
 }
 
 func main() {
+	// parse arguments
+	flag.Parse()
+
 	// parse config
 	parseConfig()
 
-	for n := 1; n < 4; n += 1 {
-		for _, mr := range GetMergeRequests(config.ProjectsMap[config.DefaultProject], n) {
-			fmt.Println(mr)
-		}
+	for _, mr := range GetMergeRequests(config.ProjectsMap[config.DefaultProject], 1) {
+		fmt.Println(mr)
 	}
 }
 
 // GetMergeRequests is to get all merge request for a project
 func GetMergeRequests(projectID string, page int) []MergeRequest {
-	url := fmt.Sprintf("%s/projects/%s/merge_requests?private_token=%s&page=%d&state=closed", config.Host, projectID, config.PrivateToken, page)
+	url := fmt.Sprintf("%s/projects/%s/merge_requests?private_token=%s&page=%d&per_page=%d", config.Host, projectID, config.PrivateToken, page, *perPage)
 	response, err := http.Get(url)
 	if err != nil {
 		panic("something wrong with the requests")
